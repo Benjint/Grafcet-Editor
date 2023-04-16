@@ -1,4 +1,4 @@
-import {Text, Line, Group, Rect} from 'react-konva';
+import {Group, Line, Rect, Text} from 'react-konva';
 import {useRef, useState} from "react";
 
 const BLOCKSIZE = 50;
@@ -24,6 +24,28 @@ export default function Transition({x, y, uuid, erase, value}) {
 		}
 	}
 
+	let parseCondition = () => {
+		//!(abc) =
+		let text = JSON.stringify(data)
+		text = text.replace("/", "↑").replace("\\\\", "↓").replace(/"/g, "")
+		let matches = text.match(/!\((.)+\)/g)
+		if (matches !== null)
+		{
+			for (let i = 0; i < matches.length; i++) {
+				let str = matches[i]
+				let result = ""
+				str = str.replace(/!\(/g, "").replace(/\)/g, "")
+
+				for (let j = 0; j < str.length; j++) {
+					result += str[j] + "̅"
+				}
+				console.log(matches[i], result)
+				text = text.replace(matches[i], result)
+			}
+		}
+		return text
+	}
+
 	return (
 		<Group draggable onDragEnd={(e) => dragEnd(e)}
 			   width={BLOCKSIZE * 2}
@@ -41,7 +63,7 @@ export default function Transition({x, y, uuid, erase, value}) {
 			<Text ref={textRef}
 				x={x + 40 + BLOCKSIZE}
 				y={y + BLOCKSIZE * 1.5 - 10}
-				text={data}
+				text={parseCondition()}
 				fontFamily="Inter"
 				fontSize={20} />
 			<Rect

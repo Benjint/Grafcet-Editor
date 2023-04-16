@@ -46,6 +46,29 @@ export default function ConditionAction({x, y, uuid, erase, value}) {
 			value = data
 		}
 	}
+
+	let parseCondition = () => {
+		//!(abc) =
+		let text = JSON.stringify(data[1])
+		text = text.replace("/", "↑").replace("\\\\", "↓").replace(/"/g, "")
+		let matches = text.match(/!\((.)+\)/g)
+		if (matches !== null)
+		{
+			for (let i = 0; i < matches.length; i++) {
+				let str = matches[i]
+				let result = ""
+				str = str.replace(/!\(/g, "").replace(/\)/g, "")
+
+				for (let j = 0; j < str.length; j++) {
+					result += str[j] + "̅"
+				}
+				console.log(matches[i], result)
+				text = text.replace(matches[i], result)
+			}
+		}
+		return text
+	}
+
 	return (
 		<Group ref={groupRef} draggable onDragEnd={(e) => dragEnd(e)}
 			   width={BLOCKSIZE * 2}
@@ -67,7 +90,7 @@ export default function ConditionAction({x, y, uuid, erase, value}) {
 			<Text ref={conditionRef}
 				  x={x + BLOCKSIZE * 2 - 20}
 				  y={y-40}
-				  text={data[1]}
+				  text={parseCondition()}
 				  fontFamily="Inter"
 				  fontSize={20}
 				  onDblClick={(e) => conditionChange(e)} />
