@@ -3,7 +3,7 @@ import {useRef, useState} from "react";
 
 const BLOCKSIZE = 50;
 
-export default function Transition({x, y, uuid, erase, value}) {
+export default function Transition({x, y, uuid, erase, value, values, setValues}) {
 	let [data, setData] = useState(value)
 	let textRef = useRef(null)
 
@@ -13,6 +13,11 @@ export default function Transition({x, y, uuid, erase, value}) {
 			x: Math.round(props.x() / BLOCKSIZE) * BLOCKSIZE,
 			y: Math.round(props.y() / BLOCKSIZE) * BLOCKSIZE
 		})
+
+		let index = values.findIndex(element => element.id === uuid)
+		values[index].x = props.x()
+		values[index].y = props.y()
+		setValues(values)
 	}
 
 	let textChange = () => {
@@ -20,14 +25,17 @@ export default function Transition({x, y, uuid, erase, value}) {
 		if (newValue !== null)
 		{
 			setData(newValue)
-			value = data
+
+			let index = values.findIndex(element => element.id === uuid)
+			values[index].value = newValue
+			setValues(values)
 		}
 	}
 
 	let parseCondition = () => {
 		//!(abc) =
 		let text = JSON.stringify(data)
-		text = text.replace("/", "↑").replace("\\\\", "↓").replace(/"/g, "")
+		text = text.replace("//", "↑").replace("\\\\", "↓").replace(/"/g, "")
 		let matches = text.match(/!\((.)+\)/g)
 		if (matches !== null)
 		{
@@ -48,27 +56,27 @@ export default function Transition({x, y, uuid, erase, value}) {
 
 	return (
 		<Group draggable onDragEnd={(e) => dragEnd(e)}
+			   x={x}
+			   y={y}
 			   width={BLOCKSIZE * 2}
 			   height={BLOCKSIZE * 3}>
 			<Line
 				stroke="black"
 				strokeWidth={4}
-				points={[x + BLOCKSIZE, y, x + BLOCKSIZE, y + BLOCKSIZE * 3]} />
+				points={[BLOCKSIZE, 0, BLOCKSIZE, BLOCKSIZE * 3]} />
 
 			<Line
 				stroke="black"
 				strokeWidth={4}
-				points={[x + 20, y + BLOCKSIZE * 1.5, x + 30 + BLOCKSIZE, y + BLOCKSIZE * 1.5]} />
+				points={[20, BLOCKSIZE * 1.5, 30 + BLOCKSIZE, BLOCKSIZE * 1.5]} />
 
 			<Text ref={textRef}
-				x={x + 40 + BLOCKSIZE}
-				y={y + BLOCKSIZE * 1.5 - 10}
+				x={40 + BLOCKSIZE}
+				y={BLOCKSIZE * 1.5 - 10}
 				text={parseCondition()}
 				fontFamily="Inter"
 				fontSize={20} />
 			<Rect
-				x={x}
-				y={y}
 				width={BLOCKSIZE * 2}
 				height={BLOCKSIZE * 3}
 				id={uuid}

@@ -3,7 +3,7 @@ import {useRef, useState} from "react";
 
 const BLOCKSIZE = 50;
 
-export default function MemoryAction({x, y, uuid, erase, value}) {
+export default function MemoryAction({x, y, uuid, erase, value, values, setValues}) {
 	let [data, setData] = useState(value)
 	const groupRef = useRef(null)
 	const rectRef = useRef(null)
@@ -16,6 +16,11 @@ export default function MemoryAction({x, y, uuid, erase, value}) {
 			x: Math.round(props.x() / BLOCKSIZE) * BLOCKSIZE,
 			y: Math.round(props.y() / BLOCKSIZE) * BLOCKSIZE
 		})
+
+		let index = values.findIndex(element => element.id === uuid)
+		values[index].x = props.x()
+		values[index].y = props.y()
+		setValues(values)
 	}
 
 	let textChange = () => {
@@ -31,29 +36,30 @@ export default function MemoryAction({x, y, uuid, erase, value}) {
 			clickRef.current.width(size)
 
 			setData(newValue)
-			value = data
+
+			let index = values.findIndex(element => element.id === uuid)
+			values[index].value = newValue
+			setValues(values)
 		}
 	}
 	return (
 		<Group ref={groupRef} draggable onDragEnd={(e) => dragEnd(e)}
+			   x={x}
+			   y={y}
 			   width={BLOCKSIZE * 2}
 			   height={BLOCKSIZE * 2}>
 			<Rect ref={rectRef}
-				  x={x}
-				  y={y}
 				  width={BLOCKSIZE * 2}
 				  height={BLOCKSIZE * 2}
 				  stroke="black"
 				  strokeWidth={4} />
 			<Arrow
-				points={[x, y, x, y - 15]}
+				points={[0, 0, 0, -15]}
 				stroke="black"
 				strokeWidth={4}
 				pointerLength={5}
 				pointerWidth={5}></Arrow>
 			<Text ref={textRef}
-				  x={x}
-				  y={y}
 				  width={BLOCKSIZE * 2}
 				  height={BLOCKSIZE * 2}
 				  text={data}
@@ -62,8 +68,6 @@ export default function MemoryAction({x, y, uuid, erase, value}) {
 				  fontFamily="Inter"
 				  fontSize={28} />
 			<Rect ref={clickRef}
-				  x={x}
-				  y={y}
 				  width={BLOCKSIZE * 2}
 				  height={BLOCKSIZE * 2}
 				  id={uuid}

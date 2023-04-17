@@ -49,7 +49,8 @@ function App() {
 		height: 0
 	})
 	const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
-	const [elements, setEements] = useState([])
+	const [elements, setElements] = useState([])
+	const [stageScale, setStageScale] = useState(1)
 
 	const contentParent = useRef(null)
 	const stage = useRef(null)
@@ -61,6 +62,7 @@ function App() {
 	}, [])
 
 	useEffect(() => {
+		console.log(elements)
 		const unloadCallback = (event) => {
 			event.preventDefault();
 			event.returnValue = "";
@@ -76,7 +78,7 @@ function App() {
 		const erase = e => {
 			if (e.evt.button === 2) {
 				let id = e.target.attrs.id
-				setEements(elements.filter(el => el.id !== id))
+				setElements(elements.filter(el => el.id !== id))
 			}
 		}
 
@@ -86,63 +88,60 @@ function App() {
 				if (element.value === null) {
 					element.value = 0
 				}
-				return <InitialStep x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <InitialStep x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 			case "step":
 				if (element.value === null) {
 					element.value = 1
 				}
-				return <Step x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <Step x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 
 			case "transition":
 				if (element.value === null) {
 					element.value = 1
 				}
-				return <Transition x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <Transition x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 			case "jump-to":
 				if (element.value === null) {
 					element.value = "X0"
 				}
-				return <JumpTo x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <JumpTo x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 
 			case "simple-action":
 				if (element.value === null) {
 					element.value = "A"
 				}
-				return <SimpleAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <SimpleAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 			case "action-connector":
-				if (element.value === null) {
-					element.value = "A"
-				}
-				return <ActionConnector x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <ActionConnector x={element.x} y={element.y} uuid={element.id} erase={erase} values={elements} setValues={setElements} />
 			case "condition-action":
 				if (element.value === null) {
 					element.value = ["A", 1]
 				}
-				return <ConditionAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <ConditionAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 			case "memory-action":
 				if (element.value === null) {
 					element.value = "A"
 				}
-				return <MemoryAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <MemoryAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 			case "condition-memory-action":
 				if (element.value === null) {
 					element.value = ["A", 1]
 				}
-				return <ConditionMemoryAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <ConditionMemoryAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 			case "macro-action":
 				if (element.value === null) {
 					element.value = "A"
 				}
-				return <MacroAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <MacroAction x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} values={elements} setValues={setElements} />
 
 			case "vertical-line":
-				return <VerticalLine x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <VerticalLine x={element.x} y={element.y} uuid={element.id} erase={erase} values={elements} setValues={setElements} />
 			case "horizontal-line":
-				return <HorizontalLine x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <HorizontalLine x={element.x} y={element.y} uuid={element.id} erase={erase} values={elements} setValues={setElements} />
 			case "and":
-				return <And x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <And x={element.x} y={element.y} uuid={element.id} erase={erase} values={elements} setValues={setElements} />
 			case "and-connector":
-				return <AndConnector x={element.x} y={element.y} uuid={element.id} erase={erase} value={element.value} />
+				return <AndConnector x={element.x} y={element.y} uuid={element.id} erase={erase} values={elements} setValues={setElements} />
 			default:
 		}
 	}
@@ -151,14 +150,16 @@ function App() {
 		event.preventDefault();
 		setDraggedElement(data);
 	}
+
 	const handleDragOver = e => {
 		e.preventDefault();
 		e.stopPropagation();
 	};
+
 	const handleDrop = e => {
 		stage.current.setPointersPositions(e)
 		let id = uuid();
-		setEements(
+		setElements(
 			elements.concat([
 				{
 					id: id,
@@ -169,6 +170,7 @@ function App() {
 				}
 			])
 		)
+		setDraggedElement(null)
 		e.preventDefault();
 		e.stopPropagation();
 	};
@@ -177,7 +179,7 @@ function App() {
 		let confirm = window.confirm("Are you sure you want to create a new file ? It will delete all existing data")
 		if (confirm)
 		{
-			setEements([])
+			setElements([])
 		}
 	}
 
@@ -193,7 +195,7 @@ function App() {
 		let file = e.target.files[0]
 		let fileReader = new FileReader()
 		fileReader.onloadend = () => {
-			setEements(JSON.parse(fileReader.result))
+			setElements(JSON.parse(fileReader.result))
 		}
 		fileReader.readAsText(file)
 	}
@@ -230,6 +232,27 @@ function App() {
 		document.body.removeChild(link);
 	}
 
+	const handleWheel = (e) => {
+		e.evt.preventDefault();
+
+		const scaleBy = 1.05;
+		const oldScale = stage.current.scaleX();
+
+		const mousePointTo = {
+			x: stage.current.getRelativePointerPosition().x / oldScale - stage.current.x() / oldScale,
+			y: stage.current.getRelativePointerPosition().y / oldScale - stage.current.y() / oldScale
+		}
+
+		const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+		setStageScale(newScale)
+		setStagePos({
+			x: -(mousePointTo.x - stage.current.getRelativePointerPosition().x / newScale) * newScale,
+			y: -(mousePointTo.y - stage.current.getRelativePointerPosition().y / newScale) * newScale
+		})
+
+	}
+	
 	let xPos = {
 		start: Math.floor((-stagePos.x - stageSize.width) / BLOCKSIZE) * BLOCKSIZE,
 		end: Math.floor((-stagePos.x + stageSize.width * 2) / BLOCKSIZE) * BLOCKSIZE
@@ -267,7 +290,7 @@ function App() {
 	}
 
 	return (
-		<div className="h-screen w-screen bg-gray-800 flex flex-col">
+		<div className="h-screen w-screen bg-gray-800 flex flex-col overflow-hidden">
 			<input type='file' id='file' ref={inputFile} style={{display: 'none'}} onChange={handleFileSelected} />
 			<div className="toolbar flex">
 				<div className="toolbarOption" onClick={newFile}>
@@ -369,7 +392,10 @@ function App() {
 						}}
 						onContextMenu={e => {
 							e.evt.preventDefault()
-						}}>
+						}}
+						onWheel={handleWheel}
+						scaleX={stageScale}
+						scaleY={stageScale}>
 						<Layer>
 							{gridLines}
 						</Layer>

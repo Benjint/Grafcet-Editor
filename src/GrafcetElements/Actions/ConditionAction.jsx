@@ -3,7 +3,7 @@ import {useRef, useState} from "react";
 
 const BLOCKSIZE = 50;
 
-export default function ConditionAction({x, y, uuid, erase, value}) {
+export default function ConditionAction({x, y, uuid, erase, value, values, setValues}) {
 	let [data, setData] = useState(value)
 	const groupRef = useRef(null)
 	const rectRef = useRef(null)
@@ -18,13 +18,21 @@ export default function ConditionAction({x, y, uuid, erase, value}) {
 			x: Math.round(props.x() / BLOCKSIZE) * BLOCKSIZE,
 			y: Math.round(props.y() / BLOCKSIZE) * BLOCKSIZE
 		})
+
+		let index = values.findIndex(element => element.id === uuid)
+		values[index].x = props.x()
+		values[index].y = props.y()
+		setValues(values)
 	}
 
 	let conditionChange = () => {
 		let newValue = window.prompt("Enter new value", data[1])
 		if (newValue !== null) {
 			setData([data[0], newValue])
-			value = data
+
+			let index = values.findIndex(element => element.id === uuid)
+			values[index].value = [data[0], newValue]
+			setValues(values)
 		}
 	}
 
@@ -38,19 +46,22 @@ export default function ConditionAction({x, y, uuid, erase, value}) {
 			groupRef.current.width(size)
 			rectRef.current.width(size)
 			textRef.current.width(size)
-			lineRef.current.x(x + size - 15)
-			conditionRef.current.x(x + size - 20)
+			lineRef.current.x(size - 15)
+			conditionRef.current.x(size - 20)
 			clickRef.current.width(size)
 
 			setData([newValue, data[1]])
-			value = data
+
+			let index = values.findIndex(element => element.id === uuid)
+			values[index].value = [newValue, data[1]]
+			setValues(values)
 		}
 	}
 
 	let parseCondition = () => {
 		//!(abc) =
 		let text = JSON.stringify(data[1])
-		text = text.replace("/", "↑").replace("\\\\", "↓").replace(/"/g, "")
+		text = text.replace("//", "↑").replace("\\\\", "↓").replace(/"/g, "")
 		let matches = text.match(/!\((.)+\)/g)
 		if (matches !== null)
 		{
@@ -71,32 +82,30 @@ export default function ConditionAction({x, y, uuid, erase, value}) {
 
 	return (
 		<Group ref={groupRef} draggable onDragEnd={(e) => dragEnd(e)}
+			   x={x}
+			   y={y}
 			   width={BLOCKSIZE * 2}
 			   height={BLOCKSIZE * 2}>
 			<Rect ref={rectRef}
-				  x={x}
-				  y={y}
 				  width={BLOCKSIZE * 2}
 				  height={BLOCKSIZE * 2}
 				  stroke="black"
 				  strokeWidth={4} />
 			<Rect ref={lineRef}
-				  x={x + BLOCKSIZE * 2 - 15}
-				  y={y - 15}
+				  x={BLOCKSIZE * 2 - 15}
+				  y={-15}
 				  height={15}
 				  width={0}
 				  stroke="black"
 				  strokeWidth={4} />
 			<Text ref={conditionRef}
-				  x={x + BLOCKSIZE * 2 - 20}
-				  y={y-40}
+				  x={BLOCKSIZE * 2 - 20}
+				  y={-40}
 				  text={parseCondition()}
 				  fontFamily="Inter"
 				  fontSize={20}
 				  onDblClick={(e) => conditionChange(e)} />
 			<Text ref={textRef}
-				  x={x}
-				  y={y}
 				  width={BLOCKSIZE * 2}
 				  height={BLOCKSIZE * 2}
 				  text={data[0]}
@@ -105,8 +114,6 @@ export default function ConditionAction({x, y, uuid, erase, value}) {
 				  fontFamily="Inter"
 				  fontSize={28} />
 			<Rect ref={clickRef}
-				  x={x}
-				  y={y}
 				  width={BLOCKSIZE * 2}
 				  height={BLOCKSIZE * 2}
 				  id={uuid}
