@@ -219,7 +219,9 @@ function App() {
 	}
 
 	const exportData = () => {
-		const uri = layerRef.current.toDataURL();
+		const boundingBox = layerRef.current.getClientRect()
+
+		const uri = layerRef.current.toDataURL({ pixelRatio: 3, x: boundingBox.x, y: boundingBox.y, width: boundingBox.width, height: boundingBox.height });
 
 		let fileName = window.prompt("Enter filename : ")
 
@@ -273,7 +275,7 @@ function App() {
 				[Math.round(i) + 0.5, yPos.start, Math.round(i) + 0.5, yPos.end]
 			}
 			stroke="#ddd"
-			strokeWidth={1}></Line>
+			strokeWidth={1} />
 		)
 	}
 
@@ -285,7 +287,7 @@ function App() {
 					[xPos.start, Math.round(i) + 0.5, xPos.end, Math.round(i) + 0.5]
 				}
 				stroke="#ddd"
-				strokeWidth={1}></Line>
+				strokeWidth={1} />
 		)
 	}
 
